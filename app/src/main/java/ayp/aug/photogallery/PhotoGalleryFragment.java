@@ -1,5 +1,6 @@
 package ayp.aug.photogallery;
 
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -60,12 +61,17 @@ public class PhotoGalleryFragment extends Fragment{
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
         setRetainInstance(true);
+
+
+
         mMemoryCache = new LruCache<String,Bitmap>(cacheSize){
             @Override
             protected int sizeOf(String key, Bitmap bitmap) {
                 return bitmap.getByteCount() /1024;
             }
         };
+
+
         //Move from onCreateView
 //        mFlickrFetcher = new FlickrFetcher();q
 //        mFetcherTask = new FetcherTask();
@@ -194,22 +200,22 @@ public class PhotoGalleryFragment extends Fragment{
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.menu_item,menu);
-       MenuItem menuItem = menu.findItem(R.id.mnu_search);
+        inflater.inflate(R.menu.menu_item, menu);
+        MenuItem menuItem = menu.findItem(R.id.mnu_search);
 //        MenuItem menuItem1 = menu.findItem(R.id.mnu_search);
         final SearchView searchView = (SearchView) menuItem.getActionView();
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                Log.d(TAG,"Query text submitted: " +query);
-                mSearchKey =query;
+                Log.d(TAG, "Query text submitted: " + query);
+                mSearchKey = query;
                 loadPhotos();
                 return true;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                Log.d(TAG,"Query text submitted: " +newText);
+                Log.d(TAG, "Query text submitted: " + newText);
                 return false;
             }
         });
@@ -217,9 +223,15 @@ public class PhotoGalleryFragment extends Fragment{
         searchView.setOnSearchClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                searchView.setQuery(mSearchKey,false);
+                searchView.setQuery(mSearchKey, false);
             }
         });
+        MenuItem toggleItem = menu.findItem(R.id.mnu_toggle_polling);
+        if (PollService.isServiceAlarmOn(getActivity())) {
+            toggleItem.setTitle(R.string.stop_polling);
+        } else {
+            toggleItem.setTitle(R.string.start_polling);
+        }
     }
 
     @Override
@@ -227,6 +239,15 @@ public class PhotoGalleryFragment extends Fragment{
         switch(item.getItemId()){
             case R.id.menu_reload_photo:
                 loadPhotos();
+                return true;
+            case R.id.mnu_toggle_polling:
+                Log.d(TAG,"Start Intent service");
+      //        Intent i = PollService.newIntent(getActivity());
+                //        getActivity().startService(i);
+                boolean shouldStart = !PollService.isServiceAlarmOn(getActivity());
+                Log.d(TAG, ((shouldStart)?"Start":"Stop") + " Intent service" );
+                PollService.setServiceAlarm(getActivity(),shouldStart);
+                getActivity().invalidateOptionsMenu(); //refresh menu
                 return true;
             case R.id.mnu_clear_search:
                 mSearchKey= null;
