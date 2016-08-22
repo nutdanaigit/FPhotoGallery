@@ -7,6 +7,7 @@ public class GalleryItem extends Object {
     private  String mId;
     private  String mTitle;
     private  String mUrl;
+    private String bigSizeUrl;
 
     public String getUrl() {
         return mUrl;
@@ -42,6 +43,14 @@ public class GalleryItem extends Object {
            return that.mId!=null && mId!=null && that.mId.equals(mId);
         }
         return false;
+    }
+
+    public void setBigSizeUrl(String bigSizeUrl) {
+        this.bigSizeUrl = bigSizeUrl;
+    }
+
+    public String getBigSizeUrl() {
+        return bigSizeUrl;
     }
 //    public static void printHello(){}
 
