@@ -144,6 +144,7 @@ public class PhotoGalleryFragment extends Fragment{
 
     class PhotoHolder extends  RecyclerView.ViewHolder{
         ImageView mPhoto;
+
         public PhotoHolder(View itemView) {
             super(itemView);
             mPhoto = (ImageView) itemView.findViewById(R.id.image_photo);
