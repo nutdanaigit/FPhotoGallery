@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">PhotoGallery</string>
+    <string name="photo_progress_loaded">Loading. . .</string>
+    <string name="reload_photo">Reload</string>
+    <string name="search">Search</string>
+    <string name="clear_search">Clear search</string>
+</resources>
