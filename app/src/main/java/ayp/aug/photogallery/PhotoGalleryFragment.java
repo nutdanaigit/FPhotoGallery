@@ -3,6 +3,7 @@ package ayp.aug.photogallery;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
@@ -12,7 +13,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.content.res.ResourcesCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
@@ -26,6 +29,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,6 +55,7 @@ public class PhotoGalleryFragment extends Fragment{
     private PhotoGalleryAdapter mAdapter;
     private ThumbnailDownloader<PhotoHolder> mThumbnailDownloaderThread;
     private FetcherTask mFetcherTask;
+
 
     private LruCache<String,Bitmap> mMemoryCache;
     final int maxMemory = (int) (Runtime.getRuntime().maxMemory())/1024;
@@ -148,17 +153,73 @@ public class PhotoGalleryFragment extends Fragment{
         return v;
     }
 
-    class PhotoHolder extends  RecyclerView.ViewHolder{
+    class PhotoHolder extends  RecyclerView.ViewHolder implements View.OnClickListener{
         ImageView mPhoto;
+        Drawable drawableTest;
+        private static final String REQUEST_STRING = "Request_String_Dialog";
+        private String mBigUrl;
 
         public PhotoHolder(View itemView) {
             super(itemView);
             mPhoto = (ImageView) itemView.findViewById(R.id.image_photo);
+            mPhoto.setOnClickListener(this);
+
         }
 
         public void bindDrawable(@NonNull Drawable drawable){
+            this.drawableTest = drawable;
             mPhoto.setImageDrawable(drawable);
+
         }
+        public  void setBigUrl(String bigUrl){
+            mBigUrl =bigUrl;
+        }
+
+
+        @Override
+        public void onClick(View view) {
+//            FragmentManager fm = getActivity().getSupportFragmentManager();
+//            PhotoGalleryDialog photoGalleryDialog = new PhotoGalleryDialog(drawableTest);
+//            photoGalleryDialog.show(fm,REQUEST_STRING);
+
+            Snackbar.make(mRecyclerView,"Clicked  on Photo",Snackbar.LENGTH_SHORT).show();
+            final AlertDialog.Builder builder  = new AlertDialog.Builder(getActivity());
+            final ImageView imageView = new ImageView(getActivity());
+            imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            builder.setView(imageView);
+            builder.setPositiveButton("Close",null);
+
+            // Execute Async Task
+            new AsyncTask<String, Void, Bitmap>() {
+
+                @Override
+                protected Bitmap doInBackground(String... urls) {
+                    FlickrFetcher flickrFetcher = new FlickrFetcher();
+                    Bitmap bm = null;
+                    try{
+                        byte[] bytes = flickrFetcher.getUrlBytes(urls[0]);
+                        bm = BitmapFactory.decodeByteArray(bytes,0,bytes.length);
+                    }catch (IOException ioe){
+                        Log.e(TAG,"error in reading Bitmap",ioe);
+                        return null;
+                    }
+                    return bm;
+                }
+
+                @Override
+                protected void onProgressUpdate(Void... values) {
+                    super.onProgressUpdate(values);
+                }
+
+                @Override
+                protected void onPostExecute(Bitmap img) {
+                    builder.create().show();
+                    imageView.setImageDrawable(new BitmapDrawable(getResources(),img));
+                }
+            }.execute(mBigUrl);
+        }
+
+
     }
     class PhotoGalleryAdapter extends RecyclerView.Adapter<PhotoHolder>{
         List<GalleryItem> mGalleryItemsList;
@@ -177,17 +238,26 @@ public class PhotoGalleryFragment extends Fragment{
         @Override
         public void onBindViewHolder(PhotoHolder holder, int position) {
             Drawable smileyDrawable = ResourcesCompat.getDrawable(getResources(),R.drawable.pokemon,null);
-            GalleryItem galleryItem = mGalleryItemsList.get(position);
-            Log.d(TAG,"bind position # " + position + " , url : " + galleryItem.getUrl());
+            GalleryItem mGalleryItem = mGalleryItemsList.get(position);
+            Log.d(TAG,"bind position # " + position + " , url : " + mGalleryItem.getUrl());
+            holder.setBigUrl(mGalleryItem.getBigSizeUrl());
             holder.bindDrawable(smileyDrawable);
 
-            if(mMemoryCache.get(galleryItem.getUrl())!= null){
-                Bitmap bitmap = mMemoryCache.get(galleryItem.getUrl());
+            if(mMemoryCache.get(mGalleryItem.getUrl())!= null){
+                Bitmap bitmap = mMemoryCache.get(mGalleryItem.getUrl());
                 holder.bindDrawable(new BitmapDrawable(getResources(),bitmap));
             }else{
                 //
-                mThumbnailDownloaderThread.queueThumbnailDownloader(holder ,galleryItem.getUrl());
+                mThumbnailDownloaderThread.queueThumbnailDownloader(holder ,mGalleryItem.getUrl());
             }
+
+//            if(mMemoryCache.get(mGalleryItem.getBigSizeUrl())!= null){
+//                Bitmap bitmap = mMemoryCache.get(mGalleryItem.getBigSizeUrl());
+//                holder.bindDrawable(new BitmapDrawable(getResources(),bitmap));
+//            }else{
+//                //
+//                mThumbnailDownloaderThread.queueThumbnailDownloader(holder ,mGalleryItem.getBigSizeUrl());
+//            }
 
         }
 
@@ -289,9 +359,10 @@ public class PhotoGalleryFragment extends Fragment{
                 List<GalleryItem> itemsList = new ArrayList<>();
                 FlickrFetcher flickrFetcher = new FlickrFetcher();
                 if(params.length>0) {
-                    flickrFetcher.searchPhotos(itemsList,params[0]);// (The end)!!Don't forget fetchItems "s"!!
+                    flickrFetcher.searchPhotos(itemsList,params[0]);
                 }else{
-                    flickrFetcher.getRecentPhotos(itemsList);// (The end)!!Don't forget fetchItems "s"!!
+                    flickrFetcher.getRecentPhotos(itemsList);
+                    // (The end)!!Don't forget fetchItems "s"!!
 
                 }
 
