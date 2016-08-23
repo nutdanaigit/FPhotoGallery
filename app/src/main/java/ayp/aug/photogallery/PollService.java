@@ -25,7 +25,7 @@ import ayp.aug.photogallery.model.PhotoGalleryActivity;
  * Created by Nutdanai on 8/22/2016.
  */
 public class PollService extends IntentService {
-     private static final String TAG = "PollService";
+    private static final String TAG = "PollService";
     private static final int POLL_INTERVAL = 1000*60;
 
     public static Intent newIntent(Context context){
