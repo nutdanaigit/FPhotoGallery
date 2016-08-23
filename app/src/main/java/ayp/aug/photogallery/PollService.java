@@ -41,7 +41,7 @@ public class PollService extends IntentService {
         PendingIntent pi = PendingIntent.getService(context,0,i,0);
         AlarmManager am  = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);//เอาAlarmManager ออกมาขากระบบ
         if(isOn){
-            //AlarmManager.RTC --- > System.currentTimeMillis();
+            //AlarmManager.RTC --->> System.currentTimeMillis();
             am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME,       // param 1 : Mode
                     SystemClock.elapsedRealtime(),                      // param 2 : Start time elapsed เป็นตัวSystemClock ของตัวAndroid
                     POLL_INTERVAL,                                      // param 3 : Interval ระยะห่าง ระยะเวลา
@@ -58,9 +58,11 @@ public class PollService extends IntentService {
         return pi!=null;
     }
 
+    //คือการStart Service ทำแค่1เดียว
     @Override
     protected void onHandleIntent(Intent intent) {
         Log.i(TAG,"Receive a call from intent: " + intent);
+
         if(!isNetworkAvilableAndConnected()){
             return;
         }
@@ -68,6 +70,7 @@ public class PollService extends IntentService {
 
         String query = PhotoGalleryPreference.getStoredSearchKey(this);
         String storedLastId = PhotoGalleryPreference.getStoredLastId(this);
+//                String query = PhotoGalleryPreference.mySharedPref(this).getString(PhotoGalleryPreference.PREF_SEARCH_KEY,null);
         List<GalleryItem> galleryItemsList = new ArrayList<>();
         FlickrFetcher flickrFetcher = new FlickrFetcher();
         if(query == null){
@@ -82,7 +85,7 @@ public class PollService extends IntentService {
 
         Log.i(TAG,"Found search or recent items");
 
-        String newestId = galleryItemsList.get(0).getId();//fetch first Item
+        String newestId = galleryItemsList.get(0).getId();//fetch first Item เวลามีรูปใหม่มันจะใส่ไว้ใน on Top เราถึงCheck แค่ตำแหน่งแรกคือ 0
         if(newestId.equals(storedLastId)){
             Log.i(TAG,"No new item");
         }else{
@@ -101,7 +104,7 @@ public class PollService extends IntentService {
             notification.setContentIntent(pi);
             notification.setAutoCancel(true);
 
-            Notification notification1= notification.build(); //<<Build notification from
+            Notification notification1= notification.build(); //<<Build notification from builder
             NotificationManagerCompat nm = NotificationManagerCompat.from(this);
             nm.notify(0,notification1);
 

@@ -3,6 +3,7 @@
     package="ayp.aug.photogallery">
 
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!--May PollService-->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
     <application
