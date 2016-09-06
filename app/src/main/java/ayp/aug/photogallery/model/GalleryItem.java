@@ -1,5 +1,7 @@
 package ayp.aug.photogallery.model;
 
+import android.net.Uri;
+
 /**
  * Created by Nutdanai on 8/16/2016.
  */
@@ -8,6 +10,9 @@ public class GalleryItem extends Object {
     private  String mTitle;
     private  String mUrl;
     private String bigSizeUrl;
+    private String mOwner;
+    private String mLat;
+    private String mLon;
 
     public String getUrl() {
         return mUrl;
@@ -21,6 +26,10 @@ public class GalleryItem extends Object {
     public String getName(){
         return getTitle();
     }
+    public String getLat() {return mLat;}
+    public String getLon() {return mLon;}
+
+
 
     public void setUrl(String mUrl) {
         this.mUrl = mUrl;
@@ -34,6 +43,8 @@ public class GalleryItem extends Object {
     public void setName(String name){
         setTitle(name);
     }
+    public void setLat(String lat) {this.mLat = lat;}
+    public void setLon(String lon) {this.mLon = lon;}
 
     @Override
     public boolean equals(Object obj) {
@@ -52,6 +63,26 @@ public class GalleryItem extends Object {
     public String getBigSizeUrl() {
         return bigSizeUrl;
     }
+
+    public void setOwner(String mOwner) {
+        this.mOwner = mOwner;
+    }
 //    public static void printHello(){}
 
+
+    public String getOwner() {
+        return mOwner;
+    }
+    private static final String PHOTO_URL_PREFIX = "https://www.flickr.com/photos/" ;
+    public Uri getPhotoUri(){
+              return   Uri.parse(PHOTO_URL_PREFIX) //Return builder
+                      .buildUpon()
+                      .appendPath(mOwner)
+                      .appendPath(mId)
+                      .build();// Return Uri
+    }
+
+    public boolean isGeoCorrect(){
+        return !"0".equals(mLat) && !"0".equals(mLon);
+    }
 }

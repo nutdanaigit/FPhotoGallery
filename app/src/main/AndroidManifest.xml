@@ -2,9 +2,22 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="ayp.aug.photogallery">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <!--May PollService-->
+    <permission
+        android:name="ayp.aug.photogallery.RECEIVE_SHOW_NOTIFICATION"
+        android:protectionLevel="signature" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- May PollService -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="ayp.aug.photogallery.RECEIVE_SHOW_NOTIFICATION" />
+
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
     <application
         android:allowBackup="true"
@@ -12,6 +25,9 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <meta-data android:name="com.google.android.maps.v2.API_KEY"
+            android:value="AIzaSyCbwpfGeXwGLoUWpe8KnSNR10gvWlycYsQ"/>
+
         <activity android:name=".model.PhotoGalleryActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -19,8 +35,53 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <!--Poll Service-->
-        <service android:name=".PollService"/>
+        <!-- Poll Service -->
+        <service android:name=".PollService" />
+        <service
+            android:name=".PollJobService"
+            android:exported="true"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+        <activity
+            android:name=".PhotoPageActivity"
+            android:label="@string/in_app_browser"
+            android:parentActivityName=".model.PhotoGalleryActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            >
+        </activity>
+
+        <!--Setting-->
+        <activity android:name=".setting.SettingActivity"
+            android:label="@string/photo_setting"
+            android:parentActivityName=".model.PhotoGalleryActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"/>
+        <!--Map-->
+        <activity android:name=".map.PhotoMapActivity"
+            android:label="@string/photo_map"
+            android:parentActivityName=".model.PhotoGalleryActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"/>
+
+
+        <receiver
+            android:name=".PollStarterReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name=".NotificationReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter android:priority="-999">
+                <action android:name="ayp.aug.photogallery.ACTION_SHOW_NOTIFICATION"/>
+            </intent-filter>
+
+        </receiver>
+
+
+
+
     </application>
 
 </manifest>

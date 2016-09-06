@@ -1,5 +1,6 @@
 package ayp.aug.photogallery;
 
+import android.location.Location;
 import android.net.Uri;
 import android.util.Log;
 
@@ -101,13 +102,18 @@ public class FlickrFetcher {
         builder.appendQueryParameter("api_key", API_KEY);
         builder.appendQueryParameter("format", "json");
         builder.appendQueryParameter("nojsoncallback", "1");
-        builder.appendQueryParameter("extras", "url_s,url_z");
+        builder.appendQueryParameter("extras", "url_s,url_z,geo");
 
         //equals without case (insensitive).
         if(METHOD_SEARCH.equalsIgnoreCase(method)){
             builder.appendQueryParameter("text",param[0]);
         }
 
+        if(param.length>1){
+            //Lat & lon
+            builder.appendQueryParameter("lat",param[1]);
+            builder.appendQueryParameter("lon",param[2]);
+        }
         Uri completeUrl = builder.build();
         String url = completeUrl.toString();
 
@@ -129,8 +135,6 @@ public class FlickrFetcher {
 
         return jsonString;
     }
-
-
     /**
      * Search photo then put into <b>items</b>
      * @param items array target
@@ -139,10 +143,22 @@ public class FlickrFetcher {
     public void searchPhotos(List<GalleryItem> items, String key) {
         try {
             String url = buildUri(METHOD_SEARCH,key);
-            String jsonStr = queryItem(url);
-            if (jsonStr != null) {
-                parseJSON(items, jsonStr);
-            }
+            fetchPhoto(items,url);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e(TAG, "Failed to fetchItems ", e);
+        }
+    }
+
+    /**
+     * Search photo then put into <b>items</b>
+     * @param items array target
+     * @param key to search
+     */
+    public void searchPhotos(List<GalleryItem> items, String key,String lat,String lon) {
+        try {
+            String url = buildUri(METHOD_SEARCH,key,lat,lon);
+            fetchPhoto(items,url);
         } catch (Exception e) {
             e.printStackTrace();
             Log.e(TAG, "Failed to fetchItems ", e);
@@ -155,15 +171,21 @@ public class FlickrFetcher {
      */
     public void getRecentPhotos(List<GalleryItem> items) {
         try {
-            String url = buildUri(METHOD_GET_RECENT);
+            String  url = buildUri(METHOD_GET_RECENT);
+            fetchPhoto(items,url);
+        }catch (Exception e){
+            e.printStackTrace();
+            Log.e(TAG,"Failed to fetch items", e);
+        }
+
+
+    }
+
+    public void fetchPhoto(List<GalleryItem> items,String url) throws IOException,JSONException{
             String jsonStr = queryItem(url);
             if (jsonStr != null) {
                 parseJSON(items, jsonStr);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            Log.e(TAG, "Failed to fetchItems ", e);
-        }
     }
 
     /**
@@ -187,15 +209,20 @@ public class FlickrFetcher {
             GalleryItem item = new GalleryItem();
             item.setId(jsonPhotoItem.getString("id"));
             item.setTitle(jsonPhotoItem.getString("title"));
+            item.setOwner(jsonPhotoItem.getString("owner"));
             if (!jsonPhotoItem.has("url_s")) {
                 continue;
             }
             item.setUrl(jsonPhotoItem.getString("url_s"));
-            if (!jsonPhotoItem.has("url_z")) {
-                continue;
-            }
+
+//            if (!jsonPhotoItem.has("url_z")) {
+//                continue;
+//            }
 
             item.setBigSizeUrl(jsonPhotoItem.getString("url_z"));
+            item.setLat(jsonPhotoItem.getString("latitude"));
+            item.setLon(jsonPhotoItem.getString("longitude"));
+
             newGalleryItemList.add(item);
         }
     }

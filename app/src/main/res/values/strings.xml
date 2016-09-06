@@ -10,4 +10,16 @@
     <string name="new_picture_title">New Picture Here!!</string>
     <string name="new_picture_content">New Picture content</string>
     <string name="manual_check">Maunal Check</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="open_by_url">Open by url</string>
+    <string name="open_with_external_browser">Open With External Browser</string>
+    <string name="open_in_app_browser">Open In-app browser</string>
+    <string name="in_app_browser">In app browser</string>
+    <string name="photo_setting">Photo Setting</string>
+
+    <string name="use_gps_setting">Use GPS when searching</string>
+    <string name="photo_map">Photo Map</string>
+    <string name="open_in_map">Open in map</string>
 </resources>

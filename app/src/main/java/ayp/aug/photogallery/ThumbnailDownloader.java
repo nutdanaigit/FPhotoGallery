@@ -25,6 +25,7 @@ public class ThumbnailDownloader<T> extends HandlerThread {
 
     private Handler mResponseHandler;
     private ThumbnailDownloaderListener<T> mThumbnailDownloaderListener;
+
     interface  ThumbnailDownloaderListener<T>{
         void onThumbnailDownloaded(T target,Bitmap thumbnail,String url);
     }
@@ -35,7 +36,6 @@ public class ThumbnailDownloader<T> extends HandlerThread {
 
     public ThumbnailDownloader(Handler mUIHandler) {
         super(TAG);
-
         mResponseHandler = mUIHandler;
     }
     //มันจะเขียนHandle massage ไว้ มันจะทำที่ละอัน
@@ -64,8 +64,10 @@ public class ThumbnailDownloader<T> extends HandlerThread {
             if(url == null){
                 return;
             }
+            //กระบวนการDownload
             byte[] bitMapBytes = new FlickrFetcher().getUrlBytes(url);
             final Bitmap bitmap = BitmapFactory.decodeByteArray(bitMapBytes,0, bitMapBytes.length);
+
 
             mResponseHandler.post(new Runnable() {
                 @Override
